@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skills4Sea — WP3 Validation Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #0a1628;
+  --navy-mid: #112240;
+  --navy-light: #1a3a5c;
+  --teal: #0e7490;
+  --teal-light: #22b8cf;
+  --teal-pale: #e0f7fa;
+  --accent: #f0a500;
+  --white: #ffffff;
+  --off-white: #f8fafc;
+  --grey-50: #f1f5f9;
+  --grey-100: #e2e8f0;
+  --grey-200: #cbd5e1;
+  --grey-400: #94a3b8;
+  --grey-600: #475569;
+  --grey-800: #1e293b;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.05);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
+  --shadow-navy: 0 4px 20px rgba(10,22,40,.18);
+  --radius: 12px;
+  --radius-lg: 18px;
+  --transition: all .22s cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--off-white);
+  color: var(--grey-800);
+  min-height: 100vh;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+/* ─── SCREENS ─────────────────────────────────────────── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ─── TOP NAV ─────────────────────────────────────────── */
+.topnav {
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  height: 64px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-navy);
+}
+.topnav-brand {
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+.brand-logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-light));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.brand-text { color: var(--white); }
+.brand-text span { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
+.brand-text small { display: block; font-size: 10px; color: var(--grey-400); letter-spacing: 1.5px; text-transform: uppercase; margin-top: -2px; }
+
+.topnav-center { display: flex; gap: 4px; }
+.nav-tab {
+  padding: 8px 16px; border-radius: 8px; border: none;
+  background: transparent; color: var(--grey-400);
+  font-family: var(--font-body); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; transition: var(--transition);
+  display: flex; align-items: center; gap: 7px;
+}
+.nav-tab:hover { background: rgba(255,255,255,.07); color: var(--white); }
+.nav-tab.active { background: rgba(14,116,144,.25); color: var(--teal-light); }
+
+.topnav-right { display: flex; align-items: center; gap: 12px; }
+
+/* Role switcher */
+.role-switcher {
+  display: flex; align-items: center;
+  background: rgba(255,255,255,.07);
+  border-radius: 32px; padding: 3px;
+  gap: 2px;
+}
+.role-btn {
+  padding: 5px 14px; border-radius: 28px; border: none;
+  background: transparent; color: var(--grey-400);
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 500;
+  cursor: pointer; transition: var(--transition);
+}
+.role-btn.active { background: var(--teal); color: var(--white); }
+
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #1a4a6e, var(--teal));
+  display: flex; align-items: center; justify-content: center;
+  color: var(--white); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+
+/* ─── MAIN LAYOUT ─────────────────────────────────────── */
+.page-body { flex: 1; padding: 32px; max-width: 1280px; margin: 0 auto; width: 100%; }
+.page-body.wide { max-width: 1440px; }
+
+/* ─── CARDS ─────────────────────────────────────────── */
+.card {
+  background: var(--white); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md); padding: 24px;
+  border: 1px solid var(--grey-100);
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.card-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--navy); }
+
+/* ─── BUTTONS ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 10px; border: none;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: var(--transition); text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--navy); color: var(--white); }
+.btn-primary:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-teal { background: var(--teal); color: var(--white); }
+.btn-teal:hover { background: #0a6482; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-outline {
+  background: transparent; color: var(--teal); 
+  border: 1.5px solid var(--teal);
+}
+.btn-outline:hover { background: var(--teal-pale); }
+.btn-ghost { background: var(--grey-50); color: var(--grey-600); border: 1px solid var(--grey-100); }
+.btn-ghost:hover { background: var(--grey-100); }
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+.btn-lg { padding: 14px 28px; font-size: 15px; }
+
+/* ─── BADGES ─────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; letter-spacing: .2px;
+}
+.badge-success { background: #d1fae5; color: #065f46; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-grey { background: var(--grey-100); color: var(--grey-600); }
+.badge-teal { background: var(--teal-pale); color: var(--teal); }
+.badge-navy { background: #dbeafe; color: var(--navy); }
+
+/* ─── SECTION HEADERS ─────────────────────────────────── */
+.section-header { margin-bottom: 28px; }
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--teal); margin-bottom: 4px;
+}
+.section-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--navy); }
+.section-sub { color: var(--grey-600); font-size: 14.5px; margin-top: 6px; }
+
+/* ─── HERO BANNER ─────────────────────────────────────── */
+.hero-banner {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, #1a4a6e 100%);
+  border-radius: var(--radius-lg); padding: 36px 40px;
+  position: relative; overflow: hidden; margin-bottom: 32px;
+  box-shadow: var(--shadow-navy);
+}
+.hero-banner::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(14,116,144,.3) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero-banner::after {
+  content: '⚓';
+  position: absolute; bottom: -10px; right: 36px;
+  font-size: 120px; opacity: .04; line-height: 1;
+}
+.hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-light); margin-bottom: 8px; }
+.hero-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+.hero-sub { color: rgba(255,255,255,.6); font-size: 14px; margin-bottom: 20px; max-width: 520px; }
+.hero-stats { display: flex; gap: 32px; }
+.hero-stat { }
+.hero-stat-num { font-size: 24px; font-weight: 700; color: var(--white); font-family: var(--font-display); line-height: 1; }
+.hero-stat-label { font-size: 11px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* ─── STATS ROW ─────────────────────────────────────────── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card { background: var(--white); border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--grey-100); }
+.stat-card-icon { font-size: 22px; margin-bottom: 10px; }
+.stat-card-num { font-size: 28px; font-weight: 700; color: var(--navy); font-family: var(--font-display); line-height: 1; }
+.stat-card-label { font-size: 12.5px; color: var(--grey-600); margin-top: 4px; }
+.stat-card-trend { font-size: 12px; color: var(--success); margin-top: 6px; font-weight: 500; }
+
+/* ─── MISSION CARDS ─────────────────────────────────────── */
+.missions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 20px; }
+.mission-card {
+  background: var(--white); border-radius: var(--radius-lg);
+  border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+  transition: var(--transition); cursor: pointer;
+}
+.mission-card:hover:not(.locked) { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--teal-light); }
+.mission-card.locked { opacity: .6; cursor: not-allowed; }
+.mission-thumb {
+  height: 140px; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.mission-thumb-icon { font-size: 52px; opacity: .3; }
+.mission-thumb-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(10,22,40,.7));
+}
+.mission-thumb-badge {
+  position: absolute; top: 12px; right: 12px;
+}
+.mission-num {
+  position: absolute; top: 12px; left: 12px;
+  font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(255,255,255,.6);
+}
+.mission-body { padding: 20px; }
+.mission-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.mission-desc { font-size: 13px; color: var(--grey-600); line-height: 1.5; margin-bottom: 14px; }
+.mission-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.mission-meta-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--grey-400); }
+
+.progress-bar-wrap { background: var(--grey-100); border-radius: 4px; height: 5px; margin-top: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--teal), var(--teal-light)); transition: width .5s ease; }
+
+/* ─── TWO-COL LAYOUT ─────────────────────────────────────── */
+.two-col { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+.two-col-wide { display: grid; grid-template-columns: 1fr 380px; gap: 24px; align-items: start; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+/* ─── MISSION EXPERIENCE ─────────────────────────────────── */
+.mission-header {
+  background: var(--navy);
+  padding: 28px 32px;
+  display: flex; align-items: center; gap: 20px;
+}
+.mission-header-info { flex: 1; }
+.mission-header-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-light); margin-bottom: 4px; }
+.mission-header-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--white); }
+.mission-header-sub { font-size: 13px; color: rgba(255,255,255,.5); margin-top: 3px; }
+.mission-steps-bar {
+  background: var(--navy-mid); padding: 0 32px;
+  display: flex; align-items: center; gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  overflow-x: auto;
+}
+.mission-step-tab {
+  padding: 14px 18px; cursor: pointer;
+  border-bottom: 3px solid transparent;
+  font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,.4);
+  white-space: nowrap; transition: var(--transition);
+  display: flex; align-items: center; gap: 7px;
+}
+.mission-step-tab.active { border-color: var(--teal-light); color: var(--teal-light); }
+.mission-step-tab.done { color: rgba(255,255,255,.6); }
+.step-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255,255,255,.1); font-size: 10px;
+  display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.5);
+  font-weight: 700;
+}
+.step-dot.active { background: var(--teal); color: var(--white); }
+.step-dot.done { background: var(--success); color: var(--white); font-size: 9px; }
+
+.step-content { padding: 36px 32px; flex: 1; }
+
+/* Video placeholder */
+.video-placeholder {
+  background: linear-gradient(135deg, var(--navy) 0%, #1a4a6e 100%);
+  border-radius: var(--radius-lg); overflow: hidden;
+  aspect-ratio: 16/9; position: relative; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  max-width: 720px; box-shadow: var(--shadow-navy);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.video-placeholder:hover .play-btn { transform: scale(1.1); }
+.video-ocean-bg {
+  position: absolute; inset: 0;
+  background: 
+    radial-gradient(ellipse at 30% 70%, rgba(14,116,144,.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 30%, rgba(26,74,110,.5) 0%, transparent 60%),
+    linear-gradient(180deg, #0a1628 0%, #1a3a5c 50%, #0e3a52 100%);
+}
+.video-scene-text {
+  position: absolute; bottom: 20px; left: 20px; right: 20px;
+  font-size: 12px; color: rgba(255,255,255,.5);
+  font-family: var(--font-mono); letter-spacing: .5px;
+}
+.play-btn {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(255,255,255,.15); backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,.3);
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition); z-index: 1;
+  font-size: 22px; padding-left: 4px;
+}
+.video-duration {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(0,0,0,.5); color: var(--white);
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 3px 8px; border-radius: 4px;
+}
+
+/* Mission briefing card */
+.briefing-card {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  border-radius: var(--radius-lg); padding: 28px 32px;
+  border-left: 4px solid var(--teal-light);
+  box-shadow: var(--shadow-navy); max-width: 680px;
+}
+.briefing-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-light); margin-bottom: 10px; }
+.briefing-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 14px; }
+.briefing-text { color: rgba(255,255,255,.8); font-size: 14.5px; line-height: 1.7; margin-bottom: 18px; }
+.briefing-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+.briefing-meta-item { }
+.briefing-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,.4); }
+.briefing-meta-val { font-size: 13px; color: rgba(255,255,255,.75); font-weight: 500; }
+
+/* Decision options */
+.decision-options { display: flex; flex-direction: column; gap: 14px; max-width: 680px; }
+.decision-option {
+  background: var(--white); border-radius: var(--radius);
+  border: 2px solid var(--grey-100); padding: 18px 22px;
+  cursor: pointer; transition: var(--transition);
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.decision-option:hover { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(14,116,144,.08); }
+.decision-option.selected { border-color: var(--teal); background: var(--teal-pale); }
+.opt-label {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: var(--grey-100); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; color: var(--grey-600);
+  transition: var(--transition);
+}
+.decision-option.selected .opt-label { background: var(--teal); color: var(--white); }
+.opt-content { flex: 1; }
+.opt-title { font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.opt-desc { font-size: 13px; color: var(--grey-600); }
+
+/* Workbook / text areas */
+.workbook-question { margin-bottom: 24px; }
+.workbook-q { font-weight: 600; color: var(--navy); margin-bottom: 8px; font-size: 14.5px; }
+.workbook-q span { color: var(--teal); margin-right: 6px; }
+.wk-textarea {
+  width: 100%; min-height: 120px; resize: vertical;
+  border: 1.5px solid var(--grey-200); border-radius: 10px;
+  padding: 14px 16px; font-family: var(--font-body); font-size: 14px;
+  color: var(--grey-800); background: var(--white);
+  transition: var(--transition); line-height: 1.6;
+}
+.wk-textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px rgba(14,116,144,.08); }
+
+/* Knowledge check */
+.kc-question { margin-bottom: 24px; }
+.kc-q { font-weight: 600; color: var(--navy); margin-bottom: 12px; }
+.kc-q-num { color: var(--teal); margin-right: 8px; }
+.kc-options { display: flex; flex-direction: column; gap: 8px; }
+.kc-option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px; border-radius: 8px; border: 1.5px solid var(--grey-100);
+  cursor: pointer; transition: var(--transition); background: var(--white);
+}
+.kc-option:hover { border-color: var(--teal-light); background: var(--teal-pale); }
+.kc-option.selected { border-color: var(--teal); background: var(--teal-pale); }
+.kc-option.correct { border-color: var(--success); background: #d1fae5; }
+.kc-option.incorrect { border-color: var(--danger); background: #fee2e2; }
+.kc-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--grey-300); flex-shrink: 0; transition: var(--transition); }
+.kc-option.selected .kc-radio { border-color: var(--teal); background: var(--teal); box-shadow: inset 0 0 0 3px var(--white); }
+.kc-option-text { font-size: 14px; color: var(--grey-700); }
+
+/* ─── RESULTS SCREEN ─────────────────────────────────────── */
+.result-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  border-radius: var(--radius-lg); padding: 40px; margin-bottom: 24px;
+  text-align: center; box-shadow: var(--shadow-navy);
+  position: relative; overflow: hidden;
+}
+.result-hero::before {
+  content: '';
+  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(14,116,144,.2) 0%, transparent 70%);
+}
+.result-check { font-size: 56px; margin-bottom: 12px; }
+.result-title { font-family: var(--font-display); font-size: 28px; color: var(--white); margin-bottom: 6px; }
+.result-sub { color: rgba(255,255,255,.6); font-size: 14.5px; margin-bottom: 28px; }
+.score-display {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  background: rgba(255,255,255,.1); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 16px; padding: 18px 36px;
+}
+.score-num { font-family: var(--font-display); font-size: 52px; font-weight: 700; color: var(--white); line-height: 1; }
+.score-denom { font-size: 22px; color: rgba(255,255,255,.5); }
+
+.score-breakdown { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+.score-item { background: var(--white); border-radius: var(--radius); padding: 20px; border: 1px solid var(--grey-100); box-shadow: var(--shadow-sm); text-align: center; }
+.score-item-num { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--navy); }
+.score-item-label { font-size: 13px; color: var(--grey-600); margin-top: 4px; }
+.score-bar { height: 6px; background: var(--grey-100); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+.score-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-light)); border-radius: 3px; }
+
+/* ─── COMPETENCE PROFILE ─────────────────────────────────── */
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.comp-row {
+  background: var(--white); border-radius: var(--radius);
+  padding: 16px 20px; border: 1px solid var(--grey-100);
+  box-shadow: var(--shadow-sm);
+}
+.comp-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.comp-name { font-weight: 600; color: var(--navy); font-size: 14.5px; }
+.comp-level { font-size: 12.5px; font-weight: 600; }
+.comp-level.strong { color: var(--success); }
+.comp-level.moderate { color: var(--warning); }
+.comp-level.developing { color: var(--danger); }
+.comp-bar-bg { background: var(--grey-100); border-radius: 4px; height: 8px; overflow: hidden; }
+.comp-bar { height: 100%; border-radius: 4px; }
+.comp-trend { font-size: 11px; color: var(--grey-400); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+
+/* ─── PORTFOLIO TIMELINE ─────────────────────────────────── */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 8px; bottom: 0;
+  width: 2px; background: var(--grey-100);
+}
+.timeline-item { position: relative; margin-bottom: 24px; }
+.timeline-dot {
+  position: absolute; left: -24px; top: 14px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--teal); border: 2px solid var(--white);
+  box-shadow: 0 0 0 3px var(--grey-100);
+}
+.timeline-card { background: var(--white); border-radius: var(--radius); padding: 18px 20px; border: 1px solid var(--grey-100); box-shadow: var(--shadow-sm); }
+.timeline-date { font-size: 11px; color: var(--grey-400); font-family: var(--font-mono); margin-bottom: 6px; }
+.timeline-title { font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.timeline-excerpt { font-size: 13px; color: var(--grey-600); line-height: 1.5; }
+
+/* ─── TRAINER ─────────────────────────────────────────── */
+.learner-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.learner-table th {
+  background: var(--grey-50); padding: 11px 16px;
+  font-size: 11.5px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--grey-600); text-align: left;
+  border-bottom: 1px solid var(--grey-100);
+}
+.learner-table th:first-child { border-radius: 10px 0 0 10px; }
+.learner-table th:last-child { border-radius: 0 10px 10px 0; }
+.learner-table td { padding: 14px 16px; border-bottom: 1px solid var(--grey-50); vertical-align: middle; }
+.learner-table tr:last-child td { border-bottom: none; }
+.learner-table tr:hover td { background: var(--grey-50); }
+.learner-avatar-row { display: flex; align-items: center; gap: 10px; }
+.learner-ava { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--navy), var(--teal)); display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.learner-name { font-weight: 600; font-size: 14px; color: var(--navy); }
+.learner-email { font-size: 12px; color: var(--grey-400); }
+
+/* ─── OBSERVATION FORM ─────────────────────────────────── */
+.obs-section { margin-bottom: 20px; }
+.obs-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: var(--grey-600); margin-bottom: 8px; }
+.obs-textarea {
+  width: 100%; min-height: 80px; resize: vertical;
+  border: 1.5px solid var(--grey-200); border-radius: 8px;
+  padding: 10px 14px; font-family: var(--font-body); font-size: 13.5px;
+  color: var(--grey-800); background: var(--white); transition: var(--transition);
+}
+.obs-textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(14,116,144,.08); }
+
+.rubric-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--grey-50); }
+.rubric-label { font-size: 13.5px; color: var(--navy); font-weight: 500; }
+.rubric-score-btns { display: flex; gap: 4px; }
+.rubric-score-btn {
+  width: 30px; height: 30px; border-radius: 6px; border: 1.5px solid var(--grey-200);
+  background: var(--white); cursor: pointer; font-size: 12.5px; font-weight: 600;
+  color: var(--grey-500); transition: var(--transition); display: flex; align-items: center; justify-content: center;
+}
+.rubric-score-btn:hover { border-color: var(--teal); color: var(--teal); }
+.rubric-score-btn.active { background: var(--teal); border-color: var(--teal); color: var(--white); }
+
+.verdict-options { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 14px; }
+.verdict-option {
+  padding: 14px 12px; border-radius: 10px; border: 2px solid var(--grey-100);
+  cursor: pointer; text-align: center; transition: var(--transition);
+  background: var(--white);
+}
+.verdict-option:hover { border-color: var(--teal-light); }
+.verdict-option.selected.pass { border-color: var(--success); background: #d1fae5; }
+.verdict-option.selected.needs { border-color: var(--warning); background: #fef3c7; }
+.verdict-option.selected.recommend { border-color: var(--teal); background: var(--teal-pale); }
+.verdict-icon { font-size: 22px; margin-bottom: 6px; }
+.verdict-label { font-size: 12.5px; font-weight: 600; color: var(--navy); }
+
+/* ─── NOTIFICATION TOAST ─────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--navy); color: var(--white);
+  padding: 14px 20px; border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: 14px; display: flex; align-items: center; gap: 10px;
+  transform: translateY(100px); opacity: 0;
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  z-index: 999;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ─── SCENARIO VISUAL PANELS ─────────────────────────────── */
+.scenario-vis {
+  background: linear-gradient(135deg, #0a1628 0%, #112240 100%);
+  border-radius: var(--radius-lg); overflow: hidden;
+  height: 200px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.scenario-vis-label {
+  position: absolute; bottom: 12px; left: 16px;
+  font-size: 11px; font-family: var(--font-mono); color: rgba(255,255,255,.4);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.engine-room-vis { }
+.engine-room-vis::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255,120,0,.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(14,116,144,.2) 0%, transparent 40%),
+    radial-gradient(circle at 60% 80%, rgba(255,60,0,.08) 0%, transparent 40%);
+}
+.engine-icon-group { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.engine-icon-group .main-icon { font-size: 56px; filter: drop-shadow(0 0 20px rgba(255,120,0,.4)); }
+.engine-status-text {
+  font-size: 10px; font-family: var(--font-mono); color: rgba(255,200,100,.8);
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 4px 12px; background: rgba(255,120,0,.15); border: 1px solid rgba(255,120,0,.3);
+  border-radius: 4px;
+}
+.smoke-particles {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 12px;
+}
+.smoke-p {
+  width: 6px; border-radius: 3px;
+  background: rgba(180,180,180,.2);
+  animation: smokeRise 2s infinite ease-in-out;
+}
+.smoke-p:nth-child(1) { height: 30px; animation-delay: 0s; margin-top: 20px; }
+.smoke-p:nth-child(2) { height: 45px; animation-delay: .3s; margin-top: 10px; }
+.smoke-p:nth-child(3) { height: 25px; animation-delay: .6s; margin-top: 25px; }
+@keyframes smokeRise {
+  0%, 100% { opacity: .3; transform: translateY(0) scaleX(1); }
+  50% { opacity: .8; transform: translateY(-10px) scaleX(1.5); }
+}
+
+/* ─── SIDEBAR ─────────────────────────────────────────── */
+.sidebar-card { position: sticky; top: 88px; }
+
+/* ─── TABS ─────────────────────────────────────────── */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--grey-100); margin-bottom: 24px; }
+.tab-btn {
+  padding: 11px 20px; border: none; background: transparent;
+  font-family: var(--font-body); font-size: 13.5px; font-weight: 500;
+  color: var(--grey-500); cursor: pointer; position: relative;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: var(--transition);
+}
+.tab-btn:hover { color: var(--navy); }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─── ANIMATIONS ─────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeInUp .4s ease forwards; }
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(14,116,144,.4); }
+  70% { box-shadow: 0 0 0 10px rgba(14,116,144,0); }
+  100% { box-shadow: 0 0 0 0 rgba(14,116,144,0); }
+}
+.pulse { animation: pulse-ring 2s infinite; }
+
+/* ─── LOGIN SCREEN ─────────────────────────────────────── */
+#screen-login {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 40%, #0f3556 100%);
+  align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+#screen-login::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 80%, rgba(14,116,144,.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(26,58,96,.5) 0%, transparent 50%);
+}
+.login-container {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 420px; padding: 0 20px;
+}
+.login-card {
+  background: rgba(255,255,255,.97); border-radius: 20px;
+  padding: 40px 36px; box-shadow: var(--shadow-lg);
+}
+.login-logo { text-align: center; margin-bottom: 28px; }
+.login-logo-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  font-size: 26px; margin-bottom: 12px;
+}
+.login-brand-name { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--navy); }
+.login-brand-sub { font-size: 12px; color: var(--grey-400); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+.login-tagline { font-size: 13px; color: var(--grey-600); text-align: center; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--grey-100); }
+.login-field { margin-bottom: 16px; }
+.login-label { font-size: 12.5px; font-weight: 600; color: var(--grey-700); margin-bottom: 6px; display: block; }
+.login-input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--grey-200);
+  border-radius: 10px; font-family: var(--font-body); font-size: 14px;
+  color: var(--navy); transition: var(--transition); background: var(--white);
+}
+.login-input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 4px rgba(14,116,144,.1); }
+.login-role-select {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;
+}
+.login-role-opt {
+  padding: 10px 12px; border-radius: 10px; border: 2px solid var(--grey-100);
+  cursor: pointer; text-align: center; transition: var(--transition);
+  background: var(--white);
+}
+.login-role-opt:hover { border-color: var(--teal-light); }
+.login-role-opt.selected { border-color: var(--teal); background: var(--teal-pale); }
+.login-role-icon { font-size: 20px; margin-bottom: 4px; }
+.login-role-name { font-size: 12.5px; font-weight: 600; color: var(--navy); }
+.login-footer-note { font-size: 11.5px; color: var(--grey-400); text-align: center; margin-top: 14px; }
+.login-footer-note span { color: var(--teal); }
+
+.erasmus-badge {
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+  margin-top: 32px;
+}
+.eu-flag { font-size: 24px; }
+.erasmus-text { font-size: 11px; color: rgba(255,255,255,.4); line-height: 1.4; }
+
+/* ─── MISC ─────────────────────────────────────────── */
+.divider { height: 1px; background: var(--grey-100); margin: 20px 0; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: var(--grey-100); color: var(--grey-600); }
+.text-teal { color: var(--teal); }
+.text-navy { color: var(--navy); }
+.text-grey { color: var(--grey-600); }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11.5px; }
+.fw-600 { font-weight: 600; }
+.mt-4 { margin-top: 16px; }
+.mt-6 { margin-top: 24px; }
+.mb-4 { margin-bottom: 16px; }
+.flex { display: flex; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Competence chart wrapper */
+.chart-wrapper { position: relative; height: 320px; }
+
+/* Alert box */
+.alert {
+  padding: 14px 18px; border-radius: 10px; font-size: 13.5px;
+  display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px;
+}
+.alert-info { background: #dbeafe; color: #1e40af; border-left: 3px solid #3b82f6; }
+.alert-success { background: #d1fae5; color: #065f46; border-left: 3px solid var(--success); }
+.alert-warning { background: #fef3c7; color: #92400e; border-left: 3px solid var(--warning); }
+
+/* feedback panel */
+.feedback-panel {
+  background: var(--teal-pale);
+  border-radius: var(--radius); border-left: 4px solid var(--teal);
+  padding: 16px 20px;
+}
+.feedback-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--teal); font-weight: 600; margin-bottom: 6px; }
+.feedback-text { font-size: 13.5px; color: var(--grey-700); line-height: 1.6; }
+
+/* Overview indicators */
+.comp-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px; background: var(--grey-50);
+  border: 1px solid var(--grey-100); font-size: 12.5px; font-weight: 500;
+}
+.comp-pill-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+@media (max-width: 900px) {
+  .two-col, .two-col-wide { grid-template-columns: 1fr; }
+  .three-col { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .score-breakdown { grid-template-columns: 1fr; }
+  .comp-grid { grid-template-columns: 1fr; }
+  .verdict-options { grid-template-columns: 1fr; }
+  .page-body { padding: 20px 16px; }
+  .step-content { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-container">
+    <div class="login-card fade-in">
+      <div class="login-logo">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+          <div class="login-logo-mark">⚓</div>
+        </div>
+        <div class="login-brand-name">Skills4Sea</div>
+        <div class="login-brand-sub">WP3 Validation Tool</div>
+      </div>
+      <div class="login-tagline">Scenario-Based Competence Development &amp; Validation Platform</div>
+      <div class="login-field">
+        <label class="login-label">Email address</label>
+        <input class="login-input" type="email" value="james.morgan@maritime-academy.eu" placeholder="your@email.eu">
+      </div>
+      <div class="login-field">
+        <label class="login-label">Password</label>
+        <input class="login-input" type="password" value="••••••••" placeholder="Password">
+      </div>
+      <div class="login-field">
+        <label class="login-label">Sign in as</label>
+        <div class="login-role-select">
+          <div class="login-role-opt selected" id="role-opt-learner" onclick="selectLoginRole('learner')">
+            <div class="login-role-icon">🎓</div>
+            <div class="login-role-name">Learner</div>
+          </div>
+          <div class="login-role-opt" id="role-opt-trainer" onclick="selectLoginRole('trainer')">
+            <div class="login-role-icon">👨‍🏫</div>
+            <div class="login-role-name">Trainer</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="doLogin()">
+        Sign in to Platform →
+      </button>
+      <div class="login-footer-note">Demonstration environment · <span>Skills4Sea Erasmus+</span> · WP3 MVP</div>
+    </div>
+    <div class="erasmus-badge">
+      <div class="eu-flag">🇪🇺</div>
+      <div class="erasmus-text">Co-funded by the Erasmus+ Programme<br>of the European Union</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ LEARNER DASHBOARD ═══════════════ -->
+<div id="screen-learner-dashboard" class="screen">
+  <!-- Nav -->
+  <div class="topnav">
+    <div class="topnav-brand" onclick="showScreen('screen-learner-dashboard')">
+      <div class="brand-logo">⚓</div>
+      <div class="brand-text">
+        <span>Skills4Sea</span>
+        <small>WP3 Validation Tool</small>
+      </div>
+    </div>
+    <div class="topnav-center">
+      <button class="nav-tab active" onclick="showLearnerTab('dashboard')">📊 Dashboard</button>
+      <button class="nav-tab" onclick="showLearnerTab('missions')">🧭 Missions</button>
+      <button class="nav-tab" onclick="showLearnerTab('competence')">📈 Competence Profile</button>
+      <button class="nav-tab" onclick="showLearnerTab('portfolio')">📁 Portfolio</button>
+    </div>
+    <div class="topnav-right">
+      <div class="role-switcher">
+        <div class="role-btn active">Learner</div>
+        <div class="role-btn" onclick="switchToTrainer()">Trainer</div>
+      </div>
+      <div class="avatar">JM</div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="page-body fade-in" id="learner-main-content">
+    <!-- Dashboard content injected by JS -->
+  </div>
+</div>
+
+<!-- ═══════════════ MISSION EXPERIENCE ═══════════════ -->
+<div id="screen-mission" class="screen">
+  <div class="topnav">
+    <div class="topnav-brand" onclick="showScreen('screen-learner-dashboard')">
+      <div class="brand-logo">⚓</div>
+      <div class="brand-text"><span>Skills4Sea</span><small>WP3 Validation Tool</small></div>
+    </div>
+    <div class="topnav-center" id="mission-breadcrumb" style="color:rgba(255,255,255,.5);font-size:13px;"></div>
+    <div class="topnav-right">
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-learner-dashboard')" style="font-size:13px;">← Exit Mission</button>
+    </div>
+  </div>
+  <div class="mission-header" id="mission-header-area"></div>
+  <div class="mission-steps-bar" id="mission-steps-bar"></div>
+  <div id="mission-step-content" style="flex:1;"></div>
+</div>
+
+<!-- ═══════════════ TRAINER DASHBOARD ═══════════════ -->
+<div id="screen-trainer-dashboard" class="screen">
+  <div class="topnav">
+    <div class="topnav-brand" onclick="showScreen('screen-trainer-dashboard')">
+      <div class="brand-logo">⚓</div>
+      <div class="brand-text"><span>Skills4Sea</span><small>WP3 Validation Tool</small></div>
+    </div>
+    <div class="topnav-center">
+      <button class="nav-tab active" onclick="showTrainerTab('overview')">📊 Overview</button>
+      <button class="nav-tab" onclick="showTrainerTab('learners')">👥 Learners</button>
+      <button class="nav-tab" onclick="showTrainerTab('assessment')">✅ Assessment</button>
+      <button class="nav-tab" onclick="showTrainerTab('reports')">📑 Reports</button>
+    </div>
+    <div class="topnav-right">
+      <div class="role-switcher">
+        <div class="role-btn" onclick="switchToLearner()">Learner</div>
+        <div class="role-btn active">Trainer</div>
+      </div>
+      <div class="avatar" style="background:linear-gradient(135deg,#1a3a5c,#0e7490);">DV</div>
+    </div>
+  </div>
+  <div class="page-body fade-in" id="trainer-main-content"></div>
+</div>
+
+<!-- ═══════════════ TRAINER REVIEW ═══════════════ -->
+<div id="screen-trainer-review" class="screen">
+  <div class="topnav">
+    <div class="topnav-brand"><div class="brand-logo">⚓</div><div class="brand-text"><span>Skills4Sea</span><small>WP3 Validation Tool</small></div></div>
+    <div class="topnav-center" style="color:rgba(255,255,255,.5);font-size:13px;">Trainer Assessment Review</div>
+    <div class="topnav-right">
+      <button class="btn btn-ghost btn-sm" onclick="showScreen('screen-trainer-dashboard')">← Back to Dashboard</button>
+    </div>
+  </div>
+  <div class="page-body wide fade-in" id="trainer-review-content"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ <span id="toast-text">Saved</span></div>
+
+<script>
+// ═══════ APP STATE ═══════════════════════════════════════════
+const state = {
+  role: 'learner',
+  currentScreen: 'login',
+  missionStep: 0,
+  selectedDecision: null,
+  selectedDecision2: null,
+  kcAnswers: {},
+  kcSubmitted: false,
+  rubricScores: { communication: 0, situation: 0, decision: 0, escalation: 0 },
+  trainerVerdict: null,
+  learnerTab: 'dashboard',
+  trainerTab: 'overview',
+  workbookAnswers: { q1: '', q2: '', q3: '' },
+  caseAnswers: { q1: '', q2: '', q3: '' },
+  reflectionAnswers: { q1: '', q2: '', q3: '' },
+};
+
+// ═══════ DATA ═══════════════════════════════════════════════
+const missions = [
+  {
+    id: 1,
+    num: 'Module 1',
+    title: 'Communication Under Pressure',
+    desc: 'Effective communication during evolving operational incidents on board.',
+    status: 'completed',
+    score: 24,
+    maxScore: 30,
+    thumb: '🔊',
+    duration: '45 min',
+    competencies: ['Communication','Escalation'],
+    completedDate: '14 May 2025',
+  },
+  {
+    id: 2,
+    num: 'Module 2',
+    title: 'Situational Awareness',
+    desc: 'Engine Room Temperature Incident — Maintain awareness as conditions escalate.',
+    status: 'in-progress',
+    score: null,
+    maxScore: 30,
+    thumb: '🧭',
+    duration: '50 min',
+    competencies: ['Situational Awareness','Decision Making'],
+    completedDate: null,
+  },
+  {
+    id: 3,
+    num: 'Module 3',
+    title: 'Escalation & Reporting',
+    desc: 'Apply correct escalation protocols during a safety-critical event.',
+    status: 'locked',
+    score: null,
+    maxScore: 30,
+    thumb: '📡',
+    duration: '45 min',
+    competencies: ['Escalation','Accountability'],
+    completedDate: null,
+  },
+  {
+    id: 4,
+    num: 'Module 4',
+    title: 'Human-Machine Oversight',
+    desc: 'Interface with automated systems and maintain effective oversight.',
+    status: 'locked',
+    score: null,
+    maxScore: 30,
+    thumb: '🖥️',
+    duration: '55 min',
+    competencies: ['Human-Machine Oversight','Situational Awareness'],
+    completedDate: null,
+  },
+  {
+    id: 5,
+    num: 'Module 5',
+    title: 'Accountability & Decision Making',
+    desc: 'Complex decision scenarios requiring full situational judgement.',
+    status: 'locked',
+    score: null,
+    maxScore: 30,
+    thumb: '⚖️',
+    duration: '60 min',
+    competencies: ['Accountability','Decision Making'],
+    completedDate: null,
+  },
+];
+
+const competencies = [
+  { name: 'Communication', level: 'Strong', score: 85, trend: '↑ +12% since last assessment', color: '#059669' },
+  { name: 'Decision Making', level: 'Strong', score: 80, trend: '↑ +8% from baseline', color: '#059669' },
+  { name: 'Situational Awareness', level: 'Moderate', score: 62, trend: '→ Stable', color: '#d97706' },
+  { name: 'Escalation', level: 'Developing', score: 45, trend: '↑ +5% developing', color: '#dc2626' },
+  { name: 'Accountability', level: 'Strong', score: 78, trend: '↑ +10%', color: '#059669' },
+  { name: 'Human-Machine Oversight', level: 'Moderate', score: 58, trend: '→ Stable', color: '#d97706' },
+];
+
+const learners = [
+  { id: 1, name: 'James Morgan', email: 'j.morgan@maritime-academy.eu', initials: 'JM', progress: 40, missions_done: 2, missions_total: 5, last_active: '2 hours ago', status: 'in-progress' },
+  { id: 2, name: 'Sofia Andersen', email: 's.andersen@maritime-academy.eu', initials: 'SA', progress: 80, missions_done: 4, missions_total: 5, last_active: '1 day ago', status: 'in-progress' },
+  { id: 3, name: 'Luca Ferretti', email: 'l.ferretti@maritime-academy.eu', initials: 'LF', progress: 100, missions_done: 5, missions_total: 5, last_active: '3 days ago', status: 'complete' },
+  { id: 4, name: 'Annika Björk', email: 'a.bjork@maritime-academy.eu', initials: 'AB', progress: 20, missions_done: 1, missions_total: 5, last_active: '5 days ago', status: 'needs-review' },
+  { id: 5, name: 'Carlos Mestre', email: 'c.mestre@maritime-academy.eu', initials: 'CM', progress: 60, missions_done: 3, missions_total: 5, last_active: '1 week ago', status: 'in-progress' },
+];
+
+const kcQuestions = [
+  {
+    q: 'When an engineer reports abnormal temperature readings, what is the officer\'s first priority?',
+    options: [
+      'Inform passengers immediately',
+      'Assess the situation and gather additional information',
+      'Shut down all engine operations immediately',
+      'Document the incident in the log book'
+    ],
+    correct: 1
+  },
+  {
+    q: 'Which SOLAS regulation governs fire detection and alarm systems on board?',
+    options: ['SOLAS Chapter II-1', 'SOLAS Chapter II-2', 'SOLAS Chapter III', 'SOLAS Chapter IV'],
+    correct: 1
+  },
+  {
+    q: 'In the bridge resource management model, who bears final responsibility for escalation decisions?',
+    options: ['Chief Engineer', 'Officer on Watch', 'Master (Captain)', 'Duty Officer'],
+    correct: 2
+  },
+  {
+    q: 'What does the acronym BRM stand for in maritime operations?',
+    options: ['Bridge Resource Management', 'Basic Response Mechanism', 'Bridge Risk Monitoring', 'Bulk Resource Method'],
+    correct: 0
+  },
+  {
+    q: 'An Officer on Watch notices smoke on CCTV but cannot confirm via comms. What is the correct immediate action?',
+    options: [
+      'Wait for the next scheduled inspection',
+      'Activate general alarm and proceed as per fire plan',
+      'Contact the engine room only',
+      'Continue monitoring until visual confirmation'
+    ],
+    correct: 1
+  }
+];
+
+// ═══════ NAVIGATION ═══════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.currentScreen = id;
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function selectLoginRole(r) {
+  state.role = r;
+  document.getElementById('role-opt-learner').classList.toggle('selected', r === 'learner');
+  document.getElementById('role-opt-trainer').classList.toggle('selected', r === 'trainer');
+}
+
+function doLogin() {
+  if (state.role === 'learner') {
+    renderLearnerDashboard();
+    showScreen('screen-learner-dashboard');
+  } else {
+    renderTrainerDashboard();
+    showScreen('screen-trainer-dashboard');
+  }
+}
+
+function switchToTrainer() {
+  state.role = 'trainer';
+  renderTrainerDashboard();
+  showScreen('screen-trainer-dashboard');
+}
+
+function switchToLearner() {
+  state.role = 'learner';
+  renderLearnerDashboard();
+  showScreen('screen-learner-dashboard');
+}
+
+// ═══════ LEARNER TABS ═══════════════════════════════════════════
+function showLearnerTab(tab) {
+  state.learnerTab = tab;
+  document.querySelectorAll('#screen-learner-dashboard .nav-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['dashboard','missions','competence','portfolio'][i] === tab);
+  });
+  renderLearnerMain();
+}
+
+function renderLearnerDashboard() {
+  renderLearnerMain();
+}
+
+function renderLearnerMain() {
+  const el = document.getElementById('learner-main-content');
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+  switch(state.learnerTab) {
+    case 'dashboard': el.innerHTML = buildDashboardHTML(); initDashboardCharts(); break;
+    case 'missions': el.innerHTML = buildMissionsHTML(); break;
+    case 'competence': el.innerHTML = buildCompetenceHTML(); setTimeout(initCompetenceCharts, 50); break;
+    case 'portfolio': el.innerHTML = buildPortfolioHTML(); break;
+  }
+}
+
+// ─── DASHBOARD ──────────────────────────────────────────────
+function buildDashboardHTML() {
+  return `
+  <div class="hero-banner">
+    <div class="hero-label">Welcome back, James</div>
+    <div class="hero-title">Your Maritime Competence Journey</div>
+    <div class="hero-sub">Continue developing your operational competencies through scenario-based missions and validated assessments.</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">1/5</div>
+        <div class="hero-stat-label">Missions Completed</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">24/30</div>
+        <div class="hero-stat-label">Last Mission Score</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">4/6</div>
+        <div class="hero-stat-label">Competencies Active</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">80%</div>
+        <div class="hero-stat-label">Evidence Submitted</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-icon">🎯</div>
+      <div class="stat-card-num">24</div>
+      <div class="stat-card-label">Last Mission Score</div>
+      <div class="stat-card-trend">↑ Above cohort average</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon">⏱️</div>
+      <div class="stat-card-num">3h 20m</div>
+      <div class="stat-card-label">Platform Time</div>
+      <div class="stat-card-trend">↑ Active learner</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon">📝</div>
+      <div class="stat-card-num">12</div>
+      <div class="stat-card-label">Evidence Entries</div>
+      <div class="stat-card-trend">Portfolio building</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon">✅</div>
+      <div class="stat-card-num">Pending</div>
+      <div class="stat-card-label">Trainer Validation</div>
+      <div class="stat-card-trend" style="color:var(--warning);">Module 2 awaiting</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="section-header">
+        <div class="section-label">My Missions</div>
+        <div class="section-title">Mission Progress</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${missions.map(m => buildMissionRowCard(m)).join('')}
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <div class="card-title">Competence Overview</div>
+          <div class="badge badge-navy">Based on Module 1</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${competencies.map(c => `
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span style="font-size:13px;font-weight:500;color:var(--navy)">${c.name}</span>
+              <span style="font-size:12px;font-weight:600;color:${c.color}">${c.level}</span>
+            </div>
+            <div class="comp-bar-bg">
+              <div class="comp-bar" style="width:${c.score}%;background:${c.color};border-radius:4px;height:8px;"></div>
+            </div>
+          </div>`).join('')}
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center;" onclick="showLearnerTab('competence')">View Full Profile →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Recent Feedback</div></div>
+        <div class="feedback-panel" style="margin-bottom:12px;">
+          <div class="feedback-label">🗣️ Trainer — Module 1</div>
+          <div class="feedback-text">"Strong communication approach. James demonstrated clear escalation thinking. Recommend reviewing SOLAS Chapter II-2 before Module 3."</div>
+        </div>
+        <div class="text-xs text-grey">Dr. De Vries · 16 May 2025</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildMissionRowCard(m) {
+  const statusBadge = {
+    completed: '<span class="badge badge-success">✓ Completed</span>',
+    'in-progress': '<span class="badge badge-warning">● In Progress</span>',
+    locked: '<span class="badge badge-grey">🔒 Locked</span>',
+  }[m.status];
+  const scoreHtml = m.score ? `<span class="text-sm fw-600 text-navy">${m.score}/${m.maxScore}</span>` : '';
+  const progress = m.status === 'completed' ? 100 : m.status === 'in-progress' ? 45 : 0;
+  const clickable = m.status !== 'locked';
+  return `
+  <div class="card" style="padding:16px 20px;cursor:${clickable?'pointer':'default'};transition:var(--transition);" 
+    ${clickable ? `onmouseenter="this.style.borderColor='var(--teal-light)'" onmouseleave="this.style.borderColor='var(--grey-100)'" onclick="openMission(${m.id})"` : ''}>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--navy-light));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${m.thumb}</div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--grey-400);font-weight:600;">${m.num}</span>
+          ${statusBadge}
+          ${scoreHtml}
+        </div>
+        <div style="font-weight:600;color:var(--navy);font-size:14.5px;">${m.title}</div>
+      </div>
+      ${clickable ? '<span style="color:var(--teal);font-size:18px;">›</span>' : ''}
+    </div>
+    ${progress > 0 ? `<div class="progress-bar-wrap" style="margin-top:10px;"><div class="progress-bar-fill" style="width:${progress}%"></div></div>` : ''}
+  </div>`;
+}
+
+// ─── MISSIONS LIST ──────────────────────────────────────────
+function buildMissionsHTML() {
+  return `
+  <div class="section-header">
+    <div class="section-label">Competence Development</div>
+    <div class="section-title">My Missions</div>
+    <div class="section-sub">Complete scenario-based missions to develop and evidence your maritime competencies.</div>
+  </div>
+  <div class="missions-grid">
+    ${missions.map(m => buildMissionCard(m)).join('')}
+  </div>`;
+}
+
+function buildMissionCard(m) {
+  const statusBadge = {
+    completed: '<span class="badge badge-success">✓ Completed</span>',
+    'in-progress': '<span class="badge badge-warning">● In Progress</span>',
+    locked: '<span class="badge badge-grey">🔒 Locked</span>',
+  }[m.status];
+  const progress = m.status === 'completed' ? 100 : m.status === 'in-progress' ? 45 : 0;
+  const clickable = m.status !== 'locked';
+  return `
+  <div class="mission-card ${m.status === 'locked' ? 'locked' : ''}" ${clickable ? `onclick="openMission(${m.id})"` : ''}>
+    <div class="mission-thumb" style="background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);">
+      <div class="mission-thumb-icon">${m.thumb}</div>
+      <div class="mission-thumb-overlay"></div>
+      <div class="mission-num">${m.num}</div>
+      <div class="mission-thumb-badge">${statusBadge}</div>
+    </div>
+    <div class="mission-body">
+      <div class="mission-title">${m.title}</div>
+      <div class="mission-desc">${m.desc}</div>
+      <div class="mission-meta">
+        <div class="mission-meta-item">⏱️ ${m.duration}</div>
+        ${m.score ? `<div class="mission-meta-item">🎯 Score: ${m.score}/${m.maxScore}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
+        ${m.competencies.map(c => `<span class="tag">${c}</span>`).join('')}
+      </div>
+      ${progress > 0 ? `<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${progress}%"></div></div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ─── COMPETENCE PROFILE ──────────────────────────────────────
+function buildCompetenceHTML() {
+  return `
+  <div class="section-header">
+    <div class="section-label">Layer 2 — Competence Development</div>
+    <div class="section-title">Competence Development Profile</div>
+    <div class="section-sub">Your competencies are mapped from mission performance and validated by your trainer.</div>
+  </div>
+
+  <div class="alert alert-info" style="margin-bottom:24px;">
+    <span>ℹ️</span>
+    <div>Competence scores are derived from your mission performance using hidden mapping logic. Final validation is always confirmed by your trainer.</div>
+  </div>
+
+  <div class="two-col-wide">
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">Competence Radar</div>
+          <div class="badge badge-teal">Based on 1 mission</div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="radar-chart"></canvas>
+        </div>
+      </div>
+      <div class="comp-grid">
+        ${competencies.map(c => `
+        <div class="comp-row">
+          <div class="comp-row-top">
+            <div class="comp-name">${c.name}</div>
+            <div class="comp-level ${c.level.toLowerCase()}">${c.level}</div>
+          </div>
+          <div class="comp-bar-bg">
+            <div class="comp-bar" style="width:${c.score}%;background:${c.color};height:8px;border-radius:4px;"></div>
+          </div>
+          <div class="comp-trend">${c.trend}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">Development Summary</div></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="padding:12px 14px;background:var(--grey-50);border-radius:8px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--grey-500);margin-bottom:4px;">Strengths</div>
+            <div style="font-size:13.5px;color:var(--navy);font-weight:500;">Communication · Accountability · Decision Making</div>
+          </div>
+          <div style="padding:12px 14px;background:#fef3c7;border-radius:8px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#92400e;margin-bottom:4px;">Development Areas</div>
+            <div style="font-size:13.5px;color:#92400e;font-weight:500;">Escalation · Human-Machine Oversight</div>
+          </div>
+          <div style="padding:12px 14px;background:#d1fae5;border-radius:8px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#065f46;margin-bottom:4px;">Overall Trend</div>
+            <div style="font-size:13.5px;color:#065f46;font-weight:500;">↑ Positive development trajectory</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Trainer Note</div></div>
+        <div class="feedback-panel">
+          <div class="feedback-label">📋 Validation Status</div>
+          <div class="feedback-text">Module 1 competencies validated. Strong performance in communication observed. Escalation protocols require further development before final sign-off.</div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="badge badge-warning">Pending Validation</div>
+          <span class="text-xs text-grey">Module 2 complete</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initCompetenceCharts() {
+  const ctx = document.getElementById('radar-chart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: competencies.map(c => c.name),
+      datasets: [{
+        label: 'Competence Level',
+        data: competencies.map(c => c.score),
+        backgroundColor: 'rgba(14,116,144,.15)',
+        borderColor: '#0e7490',
+        borderWidth: 2,
+        pointBackgroundColor: '#0e7490',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false, stepSize: 25 },
+          grid: { color: '#e2e8f0' },
+          pointLabels: { font: { family: 'DM Sans', size: 12 }, color: '#1e293b' },
+          angleLines: { color: '#e2e8f0' }
+        }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function initDashboardCharts() {}
+
+// ─── PORTFOLIO ──────────────────────────────────────────────
+function buildPortfolioHTML() {
+  return `
+  <div class="section-header">
+    <div class="section-label">Evidence & Development</div>
+    <div class="section-title">My Portfolio</div>
+    <div class="section-sub">A record of your evidence, reflections, trainer feedback and competence development.</div>
+  </div>
+
+  <div class="two-col-wide">
+    <div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchPortfolioTab('timeline',this)">📅 Timeline</button>
+        <button class="tab-btn" onclick="switchPortfolioTab('evidence',this)">📝 Evidence</button>
+        <button class="tab-btn" onclick="switchPortfolioTab('feedback',this)">💬 Trainer Feedback</button>
+      </div>
+
+      <div id="tab-timeline" class="tab-panel active">
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">16 May 2025 · Module 1</div>
+              <div class="timeline-title">Mission Completed — Communication Under Pressure</div>
+              <div class="timeline-excerpt">Score: 24/30 · Knowledge: 8/10 · Behaviour: 12/15 · Evidence: 4/5</div>
+              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="badge badge-success">Completed</span>
+                <span class="badge badge-teal">Trainer Validated</span>
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--warning)"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">18 May 2025 · Module 2</div>
+              <div class="timeline-title">Workbook Submitted — Situational Awareness</div>
+              <div class="timeline-excerpt">3 workbook responses and case analysis submitted. Awaiting trainer review.</div>
+              <div style="margin-top:8px;">
+                <span class="badge badge-warning">Pending Validation</span>
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--teal-light)"></div>
+            <div class="timeline-card">
+              <div class="timeline-date">14 May 2025 · Onboarding</div>
+              <div class="timeline-title">Platform Onboarding Complete</div>
+              <div class="timeline-excerpt">Learner registered and enrolled in Skills4Sea WP3 competence programme.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-evidence" class="tab-panel">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-header">
+            <div class="card-title">Workbook Evidence — Module 1</div>
+            <span class="badge badge-success">Validated</span>
+          </div>
+          <div class="workbook-question">
+            <div class="workbook-q"><span>Q1.</span> Why did you choose this action?</div>
+            <div style="background:var(--grey-50);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--grey-700);line-height:1.6;">
+              "I requested additional information because the initial report lacked specifics about which temperature sensors were affected. Without knowing the location and severity, escalating immediately to the captain could create unnecessary alarm. Gathering more data first is aligned with best practice BRM protocols."
+            </div>
+          </div>
+          <div class="workbook-question">
+            <div class="workbook-q"><span>Q2.</span> What risks did you identify?</div>
+            <div style="background:var(--grey-50);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--grey-700);line-height:1.6;">
+              "Primary risk was a potential fire or overheating in the engine room. Secondary risk was crew distraction and communication breakdown. I also identified the risk of delayed escalation if the situation deteriorated rapidly."
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-feedback" class="tab-panel">
+        <div class="card" style="margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <div class="avatar" style="width:42px;height:42px;font-size:14px;flex-shrink:0;background:linear-gradient(135deg,#1a3a5c,var(--teal));">DV</div>
+            <div>
+              <div style="font-weight:600;color:var(--navy);">Dr. Dirk De Vries — Module 1 Assessment</div>
+              <div style="font-size:12px;color:var(--grey-400);margin-bottom:10px;">16 May 2025 · Validated</div>
+              <div class="feedback-panel">
+                <div class="feedback-text">"James demonstrated strong situational awareness and clear communication reasoning in his workbook responses. The decision to gather more information was well-justified. I recommend reviewing the SOLAS escalation procedures before Module 3 to strengthen formal reporting knowledge."</div>
+              </div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="comp-pill"><span class="comp-pill-dot" style="background:var(--success)"></span>Communication: Strong</span>
+                <span class="comp-pill"><span class="comp-pill-dot" style="background:var(--warning)"></span>Escalation: Developing</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Portfolio Summary</div></div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${[
+            ['Missions Completed', '1 of 5'],
+            ['Evidence Entries', '12 submissions'],
+            ['Trainer Validations', '1 completed'],
+            ['Competencies Active', '4 of 6'],
+            ['Overall Progress', '20%'],
+          ].map(([l,v]) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--grey-50);">
+            <span style="font-size:13px;color:var(--grey-600)">${l}</span>
+            <span style="font-size:13.5px;font-weight:600;color:var(--navy)">${v}</span>
+          </div>`).join('')}
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-teal btn-sm" style="width:100%;justify-content:center;" onclick="showToast('Portfolio report generated')">📄 Export Portfolio PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function switchPortfolioTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════ MISSION EXPERIENCE ═══════════════════════════════════
+function openMission(id) {
+  state.missionStep = 0;
+  state.selectedDecision = null;
+  state.selectedDecision2 = null;
+  state.kcAnswers = {};
+  state.kcSubmitted = false;
+  renderMissionStep();
+  showScreen('screen-mission');
+}
+
+const missionSteps = [
+  { id: 'intro', label: 'Introduction', icon: '🎬' },
+  { id: 'video', label: 'Scenario Video', icon: '🎥' },
+  { id: 'briefing', label: 'Mission Briefing', icon: '📋' },
+  { id: 'decision', label: 'Decision Point', icon: '⚡' },
+  { id: 'workbook', label: 'Workbook', icon: '✍️' },
+  { id: 'case', label: 'Case Analysis', icon: '🔍' },
+  { id: 'knowledge', label: 'Knowledge Check', icon: '🧠' },
+  { id: 'reflection', label: 'Reflection', icon: '💭' },
+];
+
+function renderMissionStep() {
+  // Header
+  document.getElementById('mission-header-area').innerHTML = `
+    <div style="width:56px;height:56px;border-radius:12px;background:rgba(14,116,144,.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">🧭</div>
+    <div class="mission-header-info">
+      <div class="mission-header-label">Module 2 · Situational Awareness</div>
+      <div class="mission-header-title">Engine Room Temperature Incident</div>
+      <div class="mission-header-sub">A realistic scenario-based competence development mission</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);">Mission Progress</div>
+      <div style="font-size:18px;font-weight:700;color:var(--white);margin-top:2px;">${state.missionStep + 1} / ${missionSteps.length}</div>
+    </div>`;
+
+  // Steps bar
+  document.getElementById('mission-steps-bar').innerHTML = missionSteps.map((s, i) => {
+    const done = i < state.missionStep;
+    const active = i === state.missionStep;
+    return `<div class="mission-step-tab ${active ? 'active' : ''} ${done ? 'done' : ''}">
+      <div class="step-dot ${active ? 'active' : ''} ${done ? 'done' : ''}">${done ? '✓' : i+1}</div>
+      ${s.icon} ${s.label}
+    </div>`;
+  }).join('');
+
+  // Content
+  const c = document.getElementById('mission-step-content');
+  const fns = [renderStepIntro, renderStepVideo, renderStepBriefing, renderStepDecision, renderStepWorkbook, renderStepCase, renderStepKnowledge, renderStepReflection];
+  c.innerHTML = '';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'step-content fade-in';
+  wrapper.innerHTML = fns[state.missionStep]();
+  c.appendChild(wrapper);
+}
+
+function nextStep() {
+  if (state.missionStep < missionSteps.length - 1) {
+    state.missionStep++;
+    renderMissionStep();
+    window.scrollTo(0,0);
+  } else {
+    showMissionResults();
+  }
+}
+
+function prevStep() {
+  if (state.missionStep > 0) {
+    state.missionStep--;
+    renderMissionStep();
+    window.scrollTo(0,0);
+  }
+}
+
+function renderStepIntro() {
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 1 — Introduction</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">Why This Matters</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Understand why situational awareness is critical in maritime operations.</p>
+    <div class="video-placeholder" style="margin-bottom:24px;" onclick="showToast('Video would play here in full deployment')">
+      <div class="video-ocean-bg"></div>
+      <div style="position:absolute;top:20px;left:20px;font-size:11px;color:rgba(255,255,255,.4);font-family:var(--font-mono);letter-spacing:1px;">WHY THIS MATTERS · 45-60 sec</div>
+      <div class="play-btn">▶</div>
+      <div class="video-duration">0:52</div>
+      <div class="video-scene-text">INCIDENT AWARENESS BRIEFING · Module 2 · Skills4Sea WP3</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--teal);margin-bottom:24px;">
+      <div style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="font-size:32px;flex-shrink:0;">⚠️</div>
+        <div>
+          <div style="font-weight:700;color:var(--navy);margin-bottom:6px;font-family:var(--font-display);">The Operational Reality</div>
+          <p style="color:var(--grey-700);font-size:14px;line-height:1.7;">Abnormal temperature readings in an engine room can indicate the early stages of a serious mechanical failure or fire. In maritime operations, the window between an abnormal reading and a critical incident can be very short. Officers must maintain continuous situational awareness and apply sound judgement under pressure.</p>
+        </div>
+      </div>
+    </div>
+    <div class="three-col" style="margin-bottom:24px;">
+      ${[
+        ['🔥', 'Thermal Events', 'Engine overheating is a leading cause of maritime incidents.'],
+        ['📡', 'Communication', 'Clear, accurate reporting prevents escalation.'],
+        ['⚓', 'Command Responsibility', 'The OOW bears critical duty of care obligations.'],
+      ].map(([i,t,d]) => `
+      <div style="background:var(--grey-50);border-radius:10px;padding:16px;border:1px solid var(--grey-100);">
+        <div style="font-size:24px;margin-bottom:8px;">${i}</div>
+        <div style="font-weight:600;color:var(--navy);margin-bottom:4px;font-size:14px;">${t}</div>
+        <div style="font-size:13px;color:var(--grey-600)">${d}</div>
+      </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-teal btn-lg" onclick="nextStep()">Proceed to Scenario →</button>
+    </div>
+  </div>`;
+}
+
+function renderStepVideo() {
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 2 — Scenario Video</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">The Situation Unfolds</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Observe the developing incident from the bridge perspective.</p>
+
+    <div class="video-placeholder" style="margin-bottom:20px;" onclick="showToast('Scenario video would play here in full deployment')">
+      <div class="video-ocean-bg" style="background:radial-gradient(ellipse at 30% 70%,rgba(255,80,0,.2) 0%,transparent 50%),radial-gradient(ellipse at 70% 30%,rgba(14,116,144,.2) 0%,transparent 50%),linear-gradient(180deg,#0a1628 0%,#1a2a3a 50%,#0e1a28 100%)"></div>
+      <div class="scenario-vis engine-room-vis" style="position:absolute;inset:0;background:none;height:100%;border-radius:0;">
+        <div class="smoke-particles">
+          <div class="smoke-p"></div>
+          <div class="smoke-p"></div>
+          <div class="smoke-p"></div>
+        </div>
+      </div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:2;">
+        <div style="font-size:52px;filter:drop-shadow(0 0 30px rgba(255,100,0,.5));">🔧</div>
+        <div style="font-size:11px;font-family:var(--font-mono);color:rgba(255,200,100,.9);letter-spacing:2px;text-transform:uppercase;padding:5px 14px;background:rgba(255,80,0,.2);border:1px solid rgba(255,80,0,.4);border-radius:4px;">ENGINE ROOM — ABNORMAL READING</div>
+      </div>
+      <div class="play-btn" style="z-index:3;">▶</div>
+      <div class="video-duration">2:15</div>
+      <div class="video-scene-text" style="z-index:3;">SCENARIO FOOTAGE · ENGINE ROOM TEMPERATURE INCIDENT · Skills4Sea WP3</div>
+      <div style="position:absolute;top:12px;left:12px;z-index:3;background:rgba(220,38,38,.85);color:white;font-size:10px;font-family:var(--font-mono);letter-spacing:1px;padding:3px 8px;border-radius:4px;">🔴 LIVE SIMULATION</div>
+    </div>
+
+    <div style="background:var(--navy);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;font-family:var(--font-mono);">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal-light);margin-bottom:10px;">SITUATION BRIEFING TRANSCRIPT</div>
+      ${[
+        ['0:00', 'Vessel operating normally. Speed 14 knots, course 278°T.'],
+        ['0:24', 'ENGINE ALARM: Temperature sensor TE-204 reading 92°C (threshold: 85°C).'],
+        ['1:02', 'Engineer reports "something feels wrong" — visual inspection requested.'],
+        ['1:45', 'Second alarm triggers. Smoke detector SD-08 activated in engine room.'],
+        ['2:10', 'Situation continues to evolve...'],
+      ].map(([t,d]) => `
+      <div style="display:flex;gap:14px;margin-bottom:8px;align-items:flex-start;">
+        <span style="font-size:11px;color:var(--teal-light);flex-shrink:0;width:35px;">${t}</span>
+        <span style="font-size:12.5px;color:rgba(255,255,255,.7)">${d}</span>
+      </div>`).join('')}
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      <button class="btn btn-teal btn-lg" onclick="nextStep()">View Mission Briefing →</button>
+    </div>
+  </div>`;
+}
+
+function renderStepBriefing() {
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 3 — Mission Briefing</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">Your Assignment</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Read the operational briefing carefully before proceeding.</p>
+
+    <div class="briefing-card" style="margin-bottom:24px;">
+      <div class="briefing-label">📋 OPERATIONAL BRIEFING — CONFIDENTIAL</div>
+      <div class="briefing-title">Officer on Watch Assignment</div>
+      <div class="briefing-text">
+        You are the Officer on Watch (OOW) aboard MV <em>Northern Star</em>. The engineering department has reported abnormal temperature readings from the main engine compartment. Sensor TE-204 has exceeded operational thresholds and a smoke detector has since activated.
+        <br><br>
+        You must assess the developing situation, gather all relevant information, and determine the most appropriate course of action in accordance with the vessel's Safety Management System and BRM protocols.
+      </div>
+      <div class="briefing-meta">
+        <div class="briefing-meta-item">
+          <div class="briefing-meta-label">Vessel</div>
+          <div class="briefing-meta-val">MV Northern Star</div>
+        </div>
+        <div class="briefing-meta-item">
+          <div class="briefing-meta-label">Position</div>
+          <div class="briefing-meta-val">OOW — Bridge</div>
+        </div>
+        <div class="briefing-meta-item">
+          <div class="briefing-meta-label">Condition</div>
+          <div class="briefing-meta-val">Alert — Escalating</div>
+        </div>
+        <div class="briefing-meta-item">
+          <div class="briefing-meta-label">Priority</div>
+          <div class="briefing-meta-val" style="color:#dc2626;font-weight:700;">HIGH</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;">
+      ${[
+        ['📡', 'Available Resources', 'Bridge CCTV, Engine Room comms, Chief Engineer on standby'],
+        ['⚠️', 'Known Information', 'TE-204 at 92°C, SD-08 smoke alarm active, engineer uncertain'],
+        ['📍', 'Vessel Status', 'Speed 14kts, open ocean, nearest port 6h away'],
+        ['📞', 'Chain of Command', 'Master (Captain) on rest, Chief Mate available on bridge'],
+      ].map(([i,t,d]) => `
+      <div style="background:var(--grey-50);border-radius:10px;padding:14px;border:1px solid var(--grey-100);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:18px;">${i}</span>
+          <span style="font-weight:600;color:var(--navy);font-size:13.5px;">${t}</span>
+        </div>
+        <div style="font-size:13px;color:var(--grey-600)">${d}</div>
+      </div>`).join('')}
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      <button class="btn btn-teal btn-lg" onclick="nextStep()">Proceed to Decision Point →</button>
+    </div>
+  </div>`;
+}
+
+function renderStepDecision() {
+  const branch = state.selectedDecision;
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 4 — Decision Point</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">What is your immediate action?</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Select the action you would take as the Officer on Watch. Your decision will influence how the situation develops.</p>
+
+    <div style="background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.2);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;">
+      <span style="font-size:20px;flex-shrink:0;">🚨</span>
+      <div>
+        <div style="font-weight:600;color:#dc2626;margin-bottom:3px;font-size:14px;">Active Alarms</div>
+        <div style="font-size:13px;color:#7f1d1d;">TE-204: 92°C (threshold exceeded) · SD-08: Smoke detector activated · Engine room comms: Unclear response</div>
+      </div>
+    </div>
+
+    <div class="decision-options" style="margin-bottom:24px;" id="decision-opts">
+      ${[
+        ['A', 'Request Additional Information', 'Contact the engine room directly for a detailed status report before taking further action. Gather all available data.'],
+        ['B', 'Immediately Escalate to the Captain', 'Wake the Master and transfer command responsibility. Follow the vessel\'s escalation procedure immediately.'],
+        ['C', 'Continue Monitoring and Stand By', 'Increase vigilance, maintain watch, and await further sensor data before making a decision.'],
+      ].map(([k,t,d], i) => `
+      <div class="decision-option ${state.selectedDecision === i ? 'selected' : ''}" onclick="selectDecision(${i})">
+        <div class="opt-label">${k}</div>
+        <div class="opt-content">
+          <div class="opt-title">${t}</div>
+          <div class="opt-desc">${d}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    ${state.selectedDecision !== null ? `
+    <div class="alert alert-info" style="margin-bottom:20px;">
+      <span>🔀</span>
+      <div><strong>Decision recorded.</strong> The scenario will now adapt based on your choice. Your reasoning will be explored in the workbook section.</div>
+    </div>` : ''}
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      <button class="btn btn-teal btn-lg" onclick="proceedFromDecision()" ${state.selectedDecision === null ? 'disabled style="opacity:.5;cursor:not-allowed;"' : ''}>Continue Scenario →</button>
+    </div>
+  </div>`;
+}
+
+function selectDecision(i) {
+  state.selectedDecision = i;
+  renderMissionStep();
+}
+
+function proceedFromDecision() {
+  if (state.selectedDecision === null) return;
+  nextStep();
+}
+
+function renderStepWorkbook() {
+  const scenarioContinuation = [
+    ["Following your request for information, the engineer responds: 'Temperature still climbing — now 97°C. I can see faint smoke near the auxiliary generator. Not sure what's causing it.' The situation is becoming more urgent."],
+    ["After waking the Master, Captain Chen takes command. He asks: 'What information do you have? What have you verified?' You must provide a clear situation report."],
+    ["While monitoring, a second alarm activates — SD-09. Two smoke detectors are now active. The engineer is unresponsive on internal comms. Time is critical."],
+  ][state.selectedDecision || 0][0];
+
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 5 — Workbook Evidence</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">Document Your Reasoning</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Your workbook responses form part of your competence evidence portfolio.</p>
+
+    <div class="briefing-card" style="margin-bottom:24px;border-left-color:var(--accent);">
+      <div class="briefing-label" style="color:var(--accent);">⚡ SCENARIO UPDATE — SITUATION EVOLVING</div>
+      <div class="briefing-text" style="font-size:14px;">${scenarioContinuation}</div>
+    </div>
+
+    ${[
+      ['q1', '1', 'Why did you choose this action?', state.workbookAnswers.q1],
+      ['q2', '2', 'What risks did you identify in this situation?', state.workbookAnswers.q2],
+      ['q3', '3', 'What information was most critical to your decision?', state.workbookAnswers.q3],
+    ].map(([k, num, q, val]) => `
+    <div class="workbook-question">
+      <div class="workbook-q"><span>${num}.</span> ${q}</div>
+      <textarea class="wk-textarea" placeholder="Enter your response here..." oninput="state.workbookAnswers.${k}=this.value">${val}</textarea>
+    </div>`).join('')}
+
+    <div class="alert alert-success" style="margin-bottom:20px;">
+      <span>💾</span>
+      <div>Your responses are automatically saved to your portfolio and will be reviewed by your trainer.</div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      <button class="btn btn-teal btn-lg" onclick="nextStep()">Continue to Case Analysis →</button>
+    </div>
+  </div>`;
+}
+
+function renderStepCase() {
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 6 — Case Analysis</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">Critical Reflection</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Analyse the broader context and implications of the operational situation.</p>
+
+    <div style="background:var(--navy);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--teal-light);margin-bottom:12px;">SCENARIO OUTCOME SUMMARY</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center;">
+        ${[
+          ['🌡️','Temperature Peak','104°C'],
+          ['⏱️','Incident Duration','18 mins'],
+          ['👥','Crew Affected','3 personnel'],
+        ].map(([i,l,v]) => `
+        <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;">
+          <div style="font-size:22px;margin-bottom:4px;">${i}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;">${l}</div>
+          <div style="font-size:18px;font-weight:700;color:var(--white);margin-top:2px;">${v}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    ${[
+      ['q1', '1', 'What information was missing that could have changed your decision?', state.caseAnswers.q1],
+      ['q2', '2', 'How might your decision have affected crew safety and vessel operations?', state.caseAnswers.q2],
+      ['q3', '3', 'What would you do differently if you encountered this situation again?', state.caseAnswers.q3],
+    ].map(([k, num, q, val]) => `
+    <div class="workbook-question">
+      <div class="workbook-q"><span>${num}.</span> ${q}</div>
+      <textarea class="wk-textarea" placeholder="Enter your analysis here..." oninput="state.caseAnswers.${k}=this.value">${val}</textarea>
+    </div>`).join('')}
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      <button class="btn btn-teal btn-lg" onclick="nextStep()">Proceed to Knowledge Check →</button>
+    </div>
+  </div>`;
+}
+
+function renderStepKnowledge() {
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 7 — Knowledge Check</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">Maritime Knowledge Assessment</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Answer the following questions based on the scenario and your maritime knowledge.</p>
+
+    ${kcQuestions.map((q, qi) => `
+    <div class="kc-question">
+      <div class="kc-q"><span class="kc-q-num">Q${qi+1}.</span> ${q.q}</div>
+      <div class="kc-options">
+        ${q.options.map((opt, oi) => {
+          let cls = '';
+          if (state.kcSubmitted) {
+            if (oi === q.correct) cls = 'correct';
+            else if (state.kcAnswers[qi] === oi) cls = 'incorrect';
+          } else if (state.kcAnswers[qi] === oi) cls = 'selected';
+          return `<div class="kc-option ${cls}" onclick="${state.kcSubmitted ? '' : `selectKC(${qi},${oi})`}" style="${state.kcSubmitted ? 'cursor:default' : ''}">
+            <div class="kc-radio"></div>
+            <div class="kc-option-text">${opt}</div>
+            ${state.kcSubmitted && oi === q.correct ? '<span style="margin-left:auto;font-size:13px;">✓ Correct</span>' : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('')}
+
+    ${state.kcSubmitted ? `
+    <div class="card" style="background:var(--teal-pale);border:1.5px solid var(--teal);margin-bottom:20px;">
+      <div style="text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🎯</div>
+        <div style="font-family:var(--font-display);font-size:22px;color:var(--navy);">Knowledge Score</div>
+        <div style="font-size:40px;font-weight:700;color:var(--teal);font-family:var(--font-display);margin:6px 0;">${getKCScore()}/10</div>
+        <div style="font-size:13px;color:var(--grey-600);">Correct answers highlighted above</div>
+      </div>
+    </div>` : ''}
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      ${!state.kcSubmitted 
+        ? `<button class="btn btn-teal btn-lg" onclick="submitKC()" ${Object.keys(state.kcAnswers).length < 5 ? 'disabled style="opacity:.5;cursor:not-allowed;"' : ''}>Submit Answers</button>`
+        : `<button class="btn btn-teal btn-lg" onclick="nextStep()">Continue to Reflection →</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function selectKC(qi, oi) {
+  state.kcAnswers[qi] = oi;
+  renderMissionStep();
+}
+
+function submitKC() {
+  state.kcSubmitted = true;
+  renderMissionStep();
+}
+
+function getKCScore() {
+  let score = 0;
+  kcQuestions.forEach((q, i) => {
+    if (state.kcAnswers[i] === q.correct) score += 2;
+  });
+  return score;
+}
+
+function renderStepReflection() {
+  return `
+  <div style="max-width:720px;">
+    <div class="section-label">Step 8 — Reflection</div>
+    <h2 style="font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:8px;">Personal Learning Reflection</h2>
+    <p style="color:var(--grey-600);margin-bottom:24px;">Consolidate your learning from this mission experience.</p>
+
+    ${[
+      ['q1', '1', 'What was the most important thing you learned from this mission?', state.reflectionAnswers.q1],
+      ['q2', '2', 'How confident were you in your decisions during this scenario?', state.reflectionAnswers.q2],
+      ['q3', '3', 'What specific actions will you take to further develop your competence in this area?', state.reflectionAnswers.q3],
+    ].map(([k, num, q, val]) => `
+    <div class="workbook-question">
+      <div class="workbook-q"><span>${num}.</span> ${q}</div>
+      <textarea class="wk-textarea" style="min-height:100px;" placeholder="Your reflection..." oninput="state.reflectionAnswers.${k}=this.value">${val}</textarea>
+    </div>`).join('')}
+
+    <div class="alert alert-info" style="margin-bottom:24px;">
+      <span>📋</span>
+      <div>Your mission is now complete. All evidence has been submitted to your trainer for review. <strong>Your trainer will provide validated assessment and feedback.</strong></div>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button class="btn btn-ghost" onclick="prevStep()">← Previous</button>
+      <button class="btn btn-primary btn-lg" onclick="showMissionResults()">Complete Mission →</button>
+    </div>
+  </div>`;
+}
+
+// ═══════ MISSION RESULTS ═══════════════════════════════════════
+function showMissionResults() {
+  const kcScore = getKCScore();
+  const behScore = 12;
+  const wbScore = 4;
+  const total = kcScore + behScore + wbScore;
+  const el = document.getElementById('mission-step-content');
+  el.innerHTML = `<div class="step-content fade-in">
+    <div style="max-width:760px;margin:0 auto;">
+      <div class="result-hero">
+        <div class="result-check">⚓</div>
+        <div class="result-title">Mission Complete</div>
+        <div class="result-sub">Engine Room Temperature Incident · Module 2</div>
+        <div class="score-display">
+          <div class="score-num">${total}</div>
+          <div class="score-denom">/ 30</div>
+        </div>
+      </div>
+
+      <div class="score-breakdown">
+        <div class="score-item">
+          <div class="score-item-num">${kcScore}</div>
+          <div style="font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Knowledge</div>
+          <div class="score-item-label">/ 10 points</div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:${kcScore*10}%"></div></div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-num">${behScore}</div>
+          <div style="font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Behaviour</div>
+          <div class="score-item-label">/ 15 points</div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:${(behScore/15)*100}%"></div></div>
+        </div>
+        <div class="score-item">
+          <div class="score-item-num">${wbScore}</div>
+          <div style="font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Workbook</div>
+          <div class="score-item-label">/ 5 points</div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:${wbScore*20}%"></div></div>
+        </div>
+      </div>
+
+      <div class="two-col" style="gap:20px;">
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header"><div class="card-title">Mission Summary</div></div>
+            ${[
+              ['Decision Selected', ['Request for Information', 'Immediate Escalation', 'Continued Monitoring'][state.selectedDecision || 0]],
+              ['Workbook Responses', Object.values(state.workbookAnswers).filter(v => v.length > 0).length + '/3 submitted'],
+              ['Case Analysis', Object.values(state.caseAnswers).filter(v => v.length > 0).length + '/3 submitted'],
+              ['Knowledge Check', `${kcScore}/10 — ${kcScore >= 8 ? 'Excellent' : kcScore >= 6 ? 'Good' : 'Developing'}`],
+              ['Reflection', Object.values(state.reflectionAnswers).filter(v => v.length > 0).length + '/3 submitted'],
+            ].map(([l,v]) => `
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--grey-50);">
+              <span style="font-size:13px;color:var(--grey-600)">${l}</span>
+              <span style="font-size:13.5px;font-weight:600;color:var(--navy)">${v}</span>
+            </div>`).join('')}
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Next Steps</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:50%;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:var(--teal);font-weight:700;">1</div>
+                <div style="font-size:13.5px;color:var(--grey-700);">Your evidence has been submitted to your trainer for review and validation.</div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:50%;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:var(--teal);font-weight:700;">2</div>
+                <div style="font-size:13.5px;color:var(--grey-700);">You will receive trainer feedback and competence validation within 48 hours.</div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:50%;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:var(--teal);font-weight:700;">3</div>
+                <div style="font-size:13.5px;color:var(--grey-700);">Module 3 — Escalation & Reporting will unlock after trainer validation.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-header"><div class="card-title">Trainer Feedback</div></div>
+            <div style="background:var(--grey-50);border-radius:8px;padding:14px;text-align:center;border:1.5px dashed var(--grey-200);">
+              <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+              <div style="font-size:13.5px;color:var(--grey-600);font-weight:500;">Awaiting trainer review</div>
+              <div style="font-size:12px;color:var(--grey-400);margin-top:4px;">Assessment remains trainer-validated</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Competencies Evidenced</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${['Situational Awareness','Decision Making','Communication','Escalation'].map((c, i) => `
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--grey-50);">
+                <span style="font-size:13px;color:var(--navy);font-weight:500;">${c}</span>
+                <span class="badge badge-warning">Evidence Submitted</span>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;justify-content:center;">
+        <button class="btn btn-ghost" onclick="showScreen('screen-learner-dashboard');showLearnerTab('dashboard')">← Return to Dashboard</button>
+        <button class="btn btn-teal" onclick="showLearnerTab('portfolio');showScreen('screen-learner-dashboard')">View Portfolio →</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('mission-steps-bar').innerHTML = missionSteps.map(s => `
+    <div class="mission-step-tab done"><div class="step-dot done">✓</div> ${s.icon} ${s.label}</div>`).join('');
+  window.scrollTo(0,0);
+}
+
+// ═══════ TRAINER DASHBOARD ═══════════════════════════════════════
+function showTrainerTab(tab) {
+  state.trainerTab = tab;
+  document.querySelectorAll('#screen-trainer-dashboard .nav-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['overview','learners','assessment','reports'][i] === tab);
+  });
+  renderTrainerMain();
+}
+
+function renderTrainerDashboard() {
+  renderTrainerMain();
+}
+
+function renderTrainerMain() {
+  const el = document.getElementById('trainer-main-content');
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+  switch(state.trainerTab) {
+    case 'overview': el.innerHTML = buildTrainerOverviewHTML(); setTimeout(initTrainerCharts, 50); break;
+    case 'learners': el.innerHTML = buildTrainerLearnersHTML(); break;
+    case 'assessment': el.innerHTML = buildTrainerAssessmentHTML(); break;
+    case 'reports': el.innerHTML = buildTrainerReportsHTML(); break;
+  }
+}
+
+function buildTrainerOverviewHTML() {
+  return `
+  <div class="hero-banner">
+    <div class="hero-label">Trainer Dashboard — Dr. Dirk De Vries</div>
+    <div class="hero-title">Cohort Assessment Overview</div>
+    <div class="hero-sub">Monitor learner progress, review evidence and validate competence development for your cohort.</div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">5</div><div class="hero-stat-label">Active Learners</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-label">Pending Reviews</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">1</div><div class="hero-stat-label">Validations Due</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">68%</div><div class="hero-stat-label">Cohort Progress</div></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-icon">👥</div>
+      <div class="stat-card-num">5</div>
+      <div class="stat-card-label">Enrolled Learners</div>
+      <div class="stat-card-trend">Spring 2025 cohort</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon">⏳</div>
+      <div class="stat-card-num">3</div>
+      <div class="stat-card-label">Awaiting Review</div>
+      <div class="stat-card-trend" style="color:var(--warning);">Action required</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon">✅</div>
+      <div class="stat-card-num">7</div>
+      <div class="stat-card-label">Validations Completed</div>
+      <div class="stat-card-trend">↑ This week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon">📊</div>
+      <div class="stat-card-num">24.1</div>
+      <div class="stat-card-label">Cohort Avg. Score</div>
+      <div class="stat-card-trend">/ 30 maximum</div>
+    </div>
+  </div>
+
+  <div class="two-col-wide">
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">Cohort Competence Overview</div>
+          <div class="badge badge-navy">5 learners · Module 1–2</div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="trainer-comp-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Pending Actions</div>
+          <span class="badge badge-warning">3 items</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${[
+            { name: 'James Morgan', mission: 'Module 2', type: 'Workbook Review', urgency: 'high' },
+            { name: 'Sofia Andersen', mission: 'Module 4', type: 'Final Validation', urgency: 'medium' },
+            { name: 'Annika Björk', mission: 'Module 1', type: 'Observation Notes', urgency: 'medium' },
+          ].map(a => `
+          <div style="display:flex;align-items:center;gap:14px;padding:12px 14px;background:${a.urgency === 'high' ? '#fff7ed' : 'var(--grey-50)'};border-radius:10px;border-left:3px solid ${a.urgency === 'high' ? 'var(--warning)' : 'var(--grey-200)'};">
+            <div style="flex:1;">
+              <div style="font-weight:600;color:var(--navy);font-size:14px;">${a.name}</div>
+              <div style="font-size:12.5px;color:var(--grey-600)">${a.mission} · ${a.type}</div>
+            </div>
+            <button class="btn btn-teal btn-sm" onclick="openTrainerReview()">Review →</button>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">Learner Progress</div></div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          ${learners.map(l => `
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+              <span style="font-size:13.5px;font-weight:600;color:var(--navy)">${l.name}</span>
+              <span style="font-size:12px;color:var(--grey-400)">${l.missions_done}/${l.missions_total}</span>
+            </div>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${l.progress}%"></div></div>
+          </div>`).join('')}
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center;" onclick="showTrainerTab('learners')">View All Learners →</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Platform Notes</div></div>
+        <div class="alert alert-info" style="margin-bottom:0;">
+          <span>🔐</span>
+          <div style="font-size:13px;"><strong>Assessment Authority:</strong> All final competence decisions remain your responsibility as the qualified trainer. The platform collects and organises evidence to support — not replace — your professional judgement.</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initTrainerCharts() {
+  const ctx = document.getElementById('trainer-comp-chart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: competencies.map(c => c.name),
+      datasets: [
+        {
+          label: 'Cohort Average',
+          data: [75, 70, 58, 42, 72, 54],
+          backgroundColor: 'rgba(14,116,144,.7)',
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+        {
+          label: 'Target Level',
+          data: [80, 80, 80, 80, 80, 80],
+          type: 'line',
+          borderColor: 'rgba(240,165,0,.6)',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'DM Sans', size: 12 } } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 11 } } },
+        y: { max: 100, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'DM Sans', size: 11 } } }
+      }
+    }
+  });
+}
+
+function buildTrainerLearnersHTML() {
+  const statusColor = { 'in-progress': 'badge-warning', complete: 'badge-success', 'needs-review': 'badge-navy' };
+  const statusLabel = { 'in-progress': 'In Progress', complete: 'Complete', 'needs-review': 'Needs Review' };
+  return `
+  <div class="section-header">
+    <div class="section-label">Cohort Management</div>
+    <div class="section-title">Learners</div>
+    <div class="section-sub">Spring 2025 cohort · Skills4Sea Maritime Competence Programme</div>
+  </div>
+
+  <div class="card">
+    <table class="learner-table">
+      <thead>
+        <tr>
+          <th>Learner</th>
+          <th>Progress</th>
+          <th>Missions</th>
+          <th>Status</th>
+          <th>Last Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${learners.map(l => `
+        <tr>
+          <td>
+            <div class="learner-avatar-row">
+              <div class="learner-ava">${l.initials}</div>
+              <div>
+                <div class="learner-name">${l.name}</div>
+                <div class="learner-email">${l.email}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="flex:1;min-width:80px;">
+                <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${l.progress}%"></div></div>
+              </div>
+              <span style="font-size:12.5px;font-weight:600;color:var(--navy);width:30px;">${l.progress}%</span>
+            </div>
+          </td>
+          <td><span style="font-weight:600;color:var(--navy)">${l.missions_done}</span><span style="color:var(--grey-400)">/${l.missions_total}</span></td>
+          <td><span class="badge ${statusColor[l.status]}">${statusLabel[l.status]}</span></td>
+          <td><span style="font-size:13px;color:var(--grey-600)">${l.last_active}</span></td>
+          <td>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-teal btn-sm" onclick="openTrainerReview()">Review</button>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('Portfolio opened')">Portfolio</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function buildTrainerAssessmentHTML() {
+  return `
+  <div class="section-header">
+    <div class="section-label">Assessment Centre</div>
+    <div class="section-title">Pending Assessments</div>
+    <div class="section-sub">Review and validate learner evidence. All assessments require trainer professional judgement.</div>
+  </div>
+
+  <div class="alert alert-warning" style="margin-bottom:24px;">
+    <span>⚠️</span>
+    <div><strong>Trainer Responsibility:</strong> The platform organises evidence for your review. All competence validation decisions are professional judgements made by you as the qualified assessor. The platform does not certify or automatically pass learners.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    ${[
+      { learner: 'James Morgan', initials: 'JM', mission: 'Module 2 — Situational Awareness', submitted: '18 May 2025', score: '—', status: 'pending' },
+      { learner: 'Sofia Andersen', initials: 'SA', mission: 'Module 4 — Human-Machine Oversight', submitted: '17 May 2025', score: '26/30', status: 'review' },
+      { learner: 'Annika Björk', initials: 'AB', mission: 'Module 1 — Communication', submitted: '15 May 2025', score: '18/30', status: 'needs-obs' },
+    ].map(a => `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="learner-ava" style="width:42px;height:42px;font-size:14px;">${a.initials}</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:var(--navy);font-size:15px;">${a.learner}</div>
+          <div style="font-size:13px;color:var(--grey-600)">${a.mission}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:var(--grey-400)">Submitted: ${a.submitted}</div>
+          <div style="font-size:14px;font-weight:600;color:var(--navy)">${a.score}</div>
+        </div>
+        <button class="btn btn-teal" onclick="openTrainerReview()">Open for Review →</button>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function buildTrainerReportsHTML() {
+  return `
+  <div class="section-header">
+    <div class="section-label">Analytics & Reporting</div>
+    <div class="section-title">Cohort Reports</div>
+  </div>
+  <div class="three-col" style="margin-bottom:24px;">
+    ${[
+      ['📊', 'Cohort Progress Report', 'Full breakdown of mission completion and scores across all learners.', 'Generate PDF'],
+      ['📈', 'Competence Development Report', 'Competency mapping across the cohort with trend analysis.', 'Generate PDF'],
+      ['📋', 'Individual Portfolio Reports', 'Per-learner portfolio with evidence, feedback and validation status.', 'Select Learner'],
+    ].map(([i,t,d,btn]) => `
+    <div class="card" style="text-align:center;">
+      <div style="font-size:36px;margin-bottom:12px;">${i}</div>
+      <div style="font-family:var(--font-display);font-size:16px;color:var(--navy);margin-bottom:8px;">${t}</div>
+      <div style="font-size:13px;color:var(--grey-600);margin-bottom:16px;">${d}</div>
+      <button class="btn btn-teal btn-sm" style="width:100%;justify-content:center;" onclick="showToast('Report generated')">📄 ${btn}</button>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title">Erasmus+ Project Reporting</div></div>
+    <div class="alert alert-info" style="margin-bottom:14px;">
+      <span>🇪🇺</span>
+      <div>Skills4Sea WP3 data exports are formatted for Erasmus+ consortium reporting and project monitoring requirements.</div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn btn-outline btn-sm" onclick="showToast('WP3 data exported')">📤 Export WP3 Data</button>
+      <button class="btn btn-outline btn-sm" onclick="showToast('KPI report generated')">📊 KPI Summary</button>
+      <button class="btn btn-outline btn-sm" onclick="showToast('Dissemination report ready')">📄 Dissemination Report</button>
+    </div>
+  </div>`;
+}
+
+// ═══════ TRAINER REVIEW ════════════════════════════════════════
+function openTrainerReview() {
+  document.getElementById('trainer-review-content').innerHTML = buildTrainerReviewHTML();
+  showScreen('screen-trainer-review');
+}
+
+function buildTrainerReviewHTML() {
+  return `
+  <div class="section-header">
+    <div class="section-label">Trainer Assessment Review</div>
+    <div class="section-title">James Morgan — Module 2</div>
+    <div class="section-sub">Engine Room Temperature Incident · Submitted 18 May 2025</div>
+  </div>
+
+  <div class="two-col-wide">
+    <div>
+      <!-- Learner submissions -->
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title">Mission Score Summary</div>
+          <div class="badge badge-warning">Pending Validation</div>
+        </div>
+        <div class="score-breakdown" style="margin-bottom:0;">
+          <div class="score-item">
+            <div class="score-item-num">${getKCScore()}</div>
+            <div style="font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Knowledge</div>
+            <div class="score-item-label">/ 10 points</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:${getKCScore()*10}%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-item-num">—</div>
+            <div style="font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Behaviour</div>
+            <div class="score-item-label">/ 15 pts — Trainer scored</div>
+          </div>
+          <div class="score-item">
+            <div class="score-item-num">—</div>
+            <div style="font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Workbook</div>
+            <div class="score-item-label">/ 5 pts — Trainer scored</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">Learner Decision</div></div>
+        <div style="background:var(--grey-50);border-radius:10px;padding:16px 18px;border-left:3px solid var(--teal);">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:6px;">Selected Option</div>
+          <div style="font-weight:600;color:var(--navy);font-size:15px;">${['A — Request Additional Information', 'B — Immediately Escalate to Captain', 'C — Continue Monitoring'][state.selectedDecision || 0]}</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">Workbook Evidence</div></div>
+        ${[
+          ['Why did you choose this action?', state.workbookAnswers.q1 || '(No response submitted)'],
+          ['What risks did you identify?', state.workbookAnswers.q2 || '(No response submitted)'],
+          ['What information was most critical?', state.workbookAnswers.q3 || '(No response submitted)'],
+        ].map(([q,a]) => `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--grey-600);margin-bottom:6px;">${q}</div>
+          <div style="background:var(--grey-50);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--grey-700);line-height:1.6;min-height:50px;">${a || '<em style="color:var(--grey-400)">No response submitted</em>'}</div>
+        </div>`).join('')}
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><div class="card-title">Knowledge Test Results</div></div>
+        ${kcQuestions.map((q, qi) => {
+          const learnerAnswer = state.kcAnswers[qi];
+          const correct = learnerAnswer === q.correct;
+          return `
+          <div style="display:flex;gap:12px;margin-bottom:12px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;background:${correct ? '#d1fae5' : '#fee2e2'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">${correct ? '✓' : '✗'}</div>
+            <div>
+              <div style="font-size:13.5px;color:var(--navy);font-weight:500;margin-bottom:3px;">${q.q}</div>
+              <div style="font-size:12px;color:var(--grey-600)">Answer: <strong>${learnerAnswer !== undefined ? q.options[learnerAnswer] : 'Not answered'}</strong> ${!correct && learnerAnswer !== undefined ? `— Correct: ${q.options[q.correct]}` : ''}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Trainer Panel -->
+    <div class="sidebar-card">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">Trainer Observation Panel</div></div>
+
+        <div class="obs-section">
+          <div class="obs-label">Behaviour Observations</div>
+          <textarea class="obs-textarea" placeholder="Record your behavioural observations from this mission...">James demonstrated considered decision-making in the initial situation. Clear awareness of BRM protocols evident in workbook responses.</textarea>
+        </div>
+
+        <div class="obs-section">
+          <div class="obs-label">Rubric Scores</div>
+          <div style="margin-bottom:8px;">
+            ${[
+              ['Communication Clarity', 'communication'],
+              ['Situational Assessment', 'situation'],
+              ['Decision Quality', 'decision'],
+              ['Escalation Judgement', 'escalation'],
+            ].map(([label, key]) => `
+            <div class="rubric-row">
+              <div class="rubric-label">${label}</div>
+              <div class="rubric-score-btns">
+                ${[1,2,3,4,5].map(n => `<button class="rubric-score-btn ${state.rubricScores[key] === n ? 'active' : ''}" onclick="setRubric('${key}',${n})">${n}</button>`).join('')}
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>
+
+        <div class="obs-section">
+          <div class="obs-label">Trainer Comments</div>
+          <textarea class="obs-textarea" placeholder="Add comments for the learner...">Strong initial approach. Recommend reviewing formal escalation procedures before Module 3.</textarea>
+        </div>
+
+        <div class="obs-section">
+          <div class="obs-label">Development Recommendations</div>
+          <textarea class="obs-textarea" style="min-height:60px;" placeholder="Development actions for this learner...">Review SOLAS Chapter II-2 escalation requirements. Practice formal reporting language.</textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Final Assessment Decision</div></div>
+        <div class="alert alert-warning" style="margin-bottom:14px;">
+          <span>⚠️</span>
+          <div style="font-size:12.5px;">This decision is your professional responsibility as the qualified assessor.</div>
+        </div>
+        <div class="verdict-options">
+          <div class="verdict-option ${state.trainerVerdict === 'pass' ? 'selected pass' : ''}" onclick="setVerdict('pass')">
+            <div class="verdict-icon">✅</div>
+            <div class="verdict-label">Pass</div>
+          </div>
+          <div class="verdict-option ${state.trainerVerdict === 'needs' ? 'selected needs' : ''}" onclick="setVerdict('needs')">
+            <div class="verdict-icon">📋</div>
+            <div class="verdict-label">Needs Further Development</div>
+          </div>
+          <div class="verdict-option ${state.trainerVerdict === 'recommend' ? 'selected recommend' : ''}" onclick="setVerdict('recommend')">
+            <div class="verdict-icon">💬</div>
+            <div class="verdict-label">Pass with Recommendations</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn btn-teal" style="flex:1;justify-content:center;" onclick="submitValidation()">Submit Validation</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setRubric(key, val) {
+  state.rubricScores[key] = val;
+  document.querySelectorAll(`.rubric-row`).forEach(row => {
+    const btns = row.querySelectorAll('.rubric-score-btn');
+    // re-render just the buttons inline — simplify by re-rendering the whole section
+  });
+  // Partial re-render
+  document.getElementById('trainer-review-content').innerHTML = buildTrainerReviewHTML();
+}
+
+function setVerdict(v) {
+  state.trainerVerdict = v;
+  document.getElementById('trainer-review-content').innerHTML = buildTrainerReviewHTML();
+}
+
+function submitValidation() {
+  if (!state.trainerVerdict) { showToast('Please select an assessment decision'); return; }
+  const labels = { pass: 'Pass', needs: 'Needs Further Development', recommend: 'Pass with Recommendations' };
+  showToast(`Assessment submitted: ${labels[state.trainerVerdict]}`);
+  setTimeout(() => showScreen('screen-trainer-dashboard'), 1500);
+}
+</script>
+</body>
+</html>
